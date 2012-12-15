@@ -4,5 +4,14 @@
  */
 
 
+var namespace = (function (global) {
+
+
+
+  return exports;
+
+})(this);
+
+
 
 
