@@ -1,5 +1,6 @@
 /**
  * My next step of "Hello javascript world!"
+ * Clone created on VAIO type P
  * 
  */
 
