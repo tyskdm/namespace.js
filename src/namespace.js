@@ -6,6 +6,9 @@
 
 var namespace = (function (global) {
 
+  var namespace = function () {
+    return true;
+  };
 
 
   return exports;
