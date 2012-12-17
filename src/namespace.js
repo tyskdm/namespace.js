@@ -46,11 +46,15 @@ var namespace = (function (globalObject) {
    * @param {function} namespace constractor
    */
   function define(nsString, nsFunction) {
-    definedNamespaces_.push({
-      name: nsString,
-      func: nsFunction,
-      stat: false
-    });
+
+    if (definedNamespaces_[nsString]) {
+      throw new Error("namespce.define MultiPlexed.");
+    } else {
+      definedNamespaces_[nsString] = {
+          func: nsFunction,
+          constracting: false
+      };
+    }
   };
 
 
@@ -60,13 +64,18 @@ var namespace = (function (globalObject) {
    * @returns {object} required object
    */
   function require(requiredNamespace) {
-    var i, l = definedNamespaces_.length();
-    
-    for (i=0; i<l; i++) {
-      if (definedNamespace_[i].name == requiredNamespace) {
-        definedNamespace_[i].stat == true;
-      }
+    if (!definedNamespaces_[nsString]) {
+      throw new Error("required namespce is not defined.");
     }
+    if (definedNamespaces_[nsString].obj) {
+      return definedNamespaces_[nsString].obj;
+    }
+    if (definedNamespaces_[nsString].constracting) {
+      throw new Error("loop.");
+    }
+    constracting = true;
+    definedNamespaces_[nsString].obj = definedNamespaces_[nsString].func();
+    return definedNamespaces_[nsString].obj;
   };
 
   var exports = namespace;
