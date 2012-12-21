@@ -17,7 +17,7 @@ var namespace = (function (globalObject) {
     var parent = global_,
         parts = nsString.split('.'),
         i, l;
-  
+
     for (i = 0, l = parts.length; i < l; i++) {
       if (typeof parent[parts[i]] === "undefined") {
         parent[parts[i]] = (i < l-1) ? {} : (nsObject || {});
@@ -52,19 +52,34 @@ var namespace = (function (globalObject) {
    * @returns {object} required object
    */
   var require = function (requiredNamespace) {
+
     if (!definedNamespaces_[nsString]) {
-      throw new Error("required namespce is not defined.");
+      var parent = global_,
+          parts = nsString.split('.'),
+          i, l;
+
+      for (i = 0, l = parts.length; i < l; i++) {
+        if (typeof parent[parts[i]] === "undefined") {
+          throw new Error("required namespce is not defined.");
+        }
+        parent = parent[parts[i]];
+      }
+      definedNamespaces_[nsString] = {obj : parent};
+      return parent; // at last, parent is the leaf.
     }
+
     if (definedNamespaces_[nsString].obj) {
       return definedNamespaces_[nsString].obj;
     }
     if (definedNamespaces_[nsString].constracting) {
       throw new Error("loop.");
     }
+
     constracting = true;
-    definedNamespaces_[nsString].obj = definedNamespaces_[nsString].func();
+    definedNamespaces_[nsString].obj = create(nsString, definedNamespaces_[nsString].func());
     return definedNamespaces_[nsString].obj;
   };
+
 
   var exports = namespace;
   exports.define = define;
