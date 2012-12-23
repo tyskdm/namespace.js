@@ -3,9 +3,10 @@
  * namespace functions for Google apps script.
  * @namespace holds namespace control methods.
  */
-var namespace = (function (globalObject) {
-  var global_ = globalObject;
-  var definedNamespaces_ = [];
+var namespace = (function () {
+
+  var global_ = this,         // 'this' is global object
+      definedNamespaces_ = [];
 
   /**
    * create namespace.
@@ -40,7 +41,7 @@ var namespace = (function (globalObject) {
     } else {
       definedNamespaces_[nsString] = {
           func: nsFunction,
-          constracting: false
+          constructing: false
       };
     }
   };
@@ -51,7 +52,7 @@ var namespace = (function (globalObject) {
    * @param {string} required namespace
    * @returns {object} required object
    */
-  var require = function (requiredNamespace) {
+  var require = function (nsString) {
 
     if (!definedNamespaces_[nsString]) {
       var parent = global_,
@@ -64,28 +65,25 @@ var namespace = (function (globalObject) {
         }
         parent = parent[parts[i]];
       }
-      definedNamespaces_[nsString] = {obj : parent};
-      return parent; // at last, parent is the leaf.
+      definedNamespaces_[nsString] = {obj : parent};  // at last, parent is the leaf.
+
+    } else if (!definedNamespaces_[nsString].obj) {
+      if (definedNamespaces_[nsString].constructing) {
+        throw new Error("loop.");
+      } else {
+        constructing = true;
+        definedNamespaces_[nsString].obj = create(nsString, definedNamespaces_[nsString].func());
+      }
     }
 
-    if (definedNamespaces_[nsString].obj) {
-      return definedNamespaces_[nsString].obj;
-    }
-    if (definedNamespaces_[nsString].constracting) {
-      throw new Error("loop.");
-    }
-
-    constracting = true;
-    definedNamespaces_[nsString].obj = create(nsString, definedNamespaces_[nsString].func());
     return definedNamespaces_[nsString].obj;
   };
 
-
-  var exports = namespace;
+  var exports = create;
   exports.define = define;
   exports.require = require;
   
   return exports;
 
-})(this); // 'this' is global object
+})();
 
