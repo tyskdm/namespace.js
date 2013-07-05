@@ -1,3 +1,8 @@
+// this function for running debug mode.
+function executeByScript() {
+  rajah.executeJasmine();
+}
+
 describe("namespace", function() {
 
   beforeEach(function() {
@@ -11,10 +16,8 @@ describe("namespace", function() {
     expect(WIL.long.name.space.tree).toBeDefined();
     expect(WIL.long.name.space.tree).toEqual(o);
     expect(typeof(WIL.long.name.space.tree)).toBe(typeof{});
-    
-    jasmine.log(">>>> jasmine.log \n>>>> Message");
-    Logger.log(">>>> jasmine.log \n>>>> Message");
   });
+
 
   it("should not overwrite existing object.", function() {
     var WIL = {};
@@ -38,7 +41,7 @@ describe("namespace.define", function() {
     WIL = undefined;
     namespace.reset_();
   });
-  
+
   it("should not throw Error to call.", function() {
     expect(func).not.toThrow();
   });
@@ -73,25 +76,25 @@ describe("namespace.require", function() {
       var o = namespace.require("WIL.test");
       expect(o).toBeDefined();
     });
-    
+
     it("should create defined object.", function() {
       func();
       var o = namespace.require("WIL.test");
       expect(WIL.test).toBeDefined();
     });
-    
+
     it("should create WIL.test as {a:1, b:2}.", function() {
       func();
       var o = namespace.require("WIL.test");
       expect(WIL.test).toEqual({a:1, b:2});
     });
-    
+
     it("should return same object as defined.", function() {
       func();
       var o = namespace.require("WIL.test");
       expect(WIL.test).toEqual(o);
     });
-    
+
   });
 
   describe("#depend", function() {
@@ -119,7 +122,7 @@ describe("namespace.require", function() {
 
       expect(requireE).not.toThrow();
     });
-    
+
     it("should return object.", function() {
       namespace.define("WIL.moduleE", moduleE);
       namespace.define("WIL.moduleF", moduleF);
@@ -128,7 +131,7 @@ describe("namespace.require", function() {
 
       expect(typeof e).toEqual(typeof {});
     });
-    
+
     it("should return defined object.", function() {
       namespace.define("WIL.moduleE", moduleE);
       namespace.define("WIL.moduleF", moduleF);
@@ -149,7 +152,7 @@ describe("namespace.require", function() {
       expect(WIL.moduleE).toBeDefined();
       expect(WIL.moduleF).toBeDefined();
     });
-    
+
     it("should create one modules.", function() {
       namespace.define("WIL.moduleE", moduleE);
       namespace.define("WIL.moduleF", moduleF);
@@ -162,9 +165,9 @@ describe("namespace.require", function() {
       expect(WIL.moduleF).toBeDefined();
     });
   });
-  
+
   describe("#Loop", function() {
-    
+
     var moduleA = function () {
       var b = namespace.require("WIL.moduleB");
       return {b:b};
@@ -187,11 +190,11 @@ describe("namespace.require", function() {
     });
 
   });
-  
+
 
 
   describe("#Not defined", function() {
-    
+
     it("it should throw Error", function() {
       function requireC() {
         namespace.require("WIL.moduleC");
@@ -203,7 +206,7 @@ describe("namespace.require", function() {
       var g;
       WIL = {};
       WIL.moduleD = {a:1, b:2, c:3};
-      
+
       var requireD = function () {
         g = namespace.require("WIL.moduleD");
       };
