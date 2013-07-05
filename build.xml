@@ -1,0 +1,283 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<project name="ant-template-for-GAS" default="usage" basedir=".">
+	<description>ant template for GAS</description>
+	<!--
+	build.xml template for Apache Ant to develop Google Apps Script.
+	version 0.4.0  2013.07.05
+	-->
+
+	<!-- directories -->
+	<property name="spec_dir"		location="${basedir}/spec"/>
+	<property name="src_dir"		location="${basedir}/src"/>
+
+	<property name="lib_dir"		location="${basedir}/lib"/>
+	<property name="ext_dir"		location="${lib_dir}/ext"/>
+
+	<property name="err_dir"		location="${basedir}/err"/>
+	<property name="out_dir"		location="${basedir}/out"/>
+
+	<property name="jsdoc_dir"		location="${basedir}/jsdoc"/>
+	<property name="jsdoc2_dir"		location="${jsdoc_dir}/jsdoc2"/>
+	<property name="jsdoc3_dir"		location="${jsdoc_dir}/jsdoc3"/>
+	<property name="yuidoc_dir"		location="${jsdoc_dir}/yuidoc"/>
+
+
+	<!-- fileset: source files to be included -->
+	<fileset id="spec" dir="${spec_dir}">
+		<include name="namespace.spec.js"/>
+	</fileset>
+
+	<fileset id="src" dir="${src_dir}">
+		<include name="namespace.js"/>
+	</fileset>
+
+	<fileset id="lib" dir="${lib_dir}">
+	</fileset>
+
+	<fileset id="ext" dir="${lib_dir}">
+	</fileset>
+
+
+	<!-- path: group of fileset -->
+	<path id="out.audit.sources">
+		<fileset refid="src"/>
+	</path>
+
+	<path id="out.audit.externs">
+		<fileset refid="lib"/>
+		<fileset refid="ext"/>
+	</path>
+
+	<path id="out.compress.sources">
+		<fileset refid="src"/>
+		<fileset refid="lib"/>
+	</path>
+
+	<path id="out.compress.externs">
+		<fileset refid="ext"/>
+	</path>
+
+
+	<path id="utest.audit.sources">
+		<fileset refid="spec"/>
+		<fileset refid="src"/>
+	</path>
+
+	<path id="utest.audit.externs">
+		<fileset refid="lib"/>
+		<fileset refid="ext"/>
+	</path>
+
+	<path id="utest.compress.sources">
+		<fileset refid="spec"/>
+		<fileset refid="src"/>
+		<fileset refid="lib"/>
+	</path>
+
+	<path id="utest.compress.externs">
+		<fileset refid="ext"/>
+	</path>
+
+
+	<!-- tools definitions -->
+	<property name="closure-compiler.jar-path" location="/usr/local/closure-compiler/compiler.jar"/>
+
+	<taskdef name="jscomp"
+			 classname="com.google.javascript.jscomp.ant.CompileTask"
+			 classpath="${closure-compiler.jar-path}"/>
+
+
+	<!-- Sub targets: called by Main targets with some parameters -->
+
+	<!-- lint
+		source files: path refid = lint.sources
+		warning file: filename = lint.warning
+	-->
+	<target name="lint">
+		<mkdir dir="${err_dir}"/>
+
+		<pathconvert property="lint.files" refid="${lint.sources}" pathsep=" "/>
+
+		<exec executable="gjslint" failonerror="true" output="${err_dir}/${lint.warning}">
+			<!-- arg value="" / -->
+			<!-- arg value="" / -->
+			<!-- arg value="" / -->
+			<arg line="${lint.files}"/>
+		</exec>
+	</target>
+
+
+	<!-- audit
+		source files: path refid = audit.sources
+		extern files: path refid = audit.externs
+		output file:  fileneme = audit.outfile
+		warning file: filename = audit.warning
+	-->
+	<target name="audit">
+		<mkdir dir="${err_dir}"/>
+		<mkdir dir="${out_dir}"/>
+
+		<pathconvert property="audit.src.files" refid="${audit.sources}" pathsep=" "/>
+		<pathconvert property="audit.ext.files" refid="${audit.externs}" pathsep=" "/>
+
+		<java jar="${closure-compiler.jar-path}"
+			output="${out_dir}/${audit.outfile}"
+			error="${err_dir}/${audit.warning}"
+			fork="true" >
+
+			<arg value="--jscomp_warning=checkRegExp"/>
+			<arg value="--jscomp_off=checkTypes"/>
+			<arg value="--jscomp_off=nonStandardJsDocs"/>
+			<arg value="--jscomp_warning=internetExplorerChecks"/>
+			<arg value="--jscomp_warning=invalidCasts"/>
+			<arg value="--jscomp_off=externsValidation"/>
+			<arg value="--process_jquery_primitives"/>
+
+			<arg line="${audit.src.files}" prefix="--js "/>
+			<arg line="${audit.ext.files}" prefix="--externs "/>
+		</java>
+    </target>
+
+
+    <!-- Concat
+		source files: path refid = concat.sources
+		output file:  file name = concat.outfile
+	-->
+	<target name="concat">
+		<mkdir  dir="${out_dir}"/>
+
+		<concat destfile="${out_dir}/${concat.outfile}">
+			<path refid="${concat.sources}"/>
+		</concat>
+	</target>
+
+
+    <!-- Compress
+		source files: path refid = compress.sources
+		output file:  filename = compress.outfile
+	-->
+	<target name="compress">
+		<mkdir  dir="${out_dir}"/>
+
+		<jscomp compilationLevel="simple" warning="quiet"
+				debug="false" output="${out_dir}/${compress.outfile}">
+			<path refid="${compress.sources}"/>
+		</jscomp>
+    </target>
+
+
+	<!-- init -->
+	<target name="init">
+		<delete dir="${err_dir}/*"/>
+
+		<!-- Create the time stamp -->
+		<tstamp>
+			<format property="DATE" pattern="yyyy/MM/dd"/>
+			<format property="TIME" pattern="HH:mm:ss"/>
+			<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
+		</tstamp>
+	</target>
+
+
+	<!-- Main targets -->
+
+	<!-- clean up project directories -->
+	<target name="clean" description="Clean up project directries.">
+		<delete dir="${err_dir}"/>
+		<delete dir="${out_dir}"/>
+		<delete dir="${jsdoc_dir}"/>
+	</target>
+
+
+	<!-- Compile for deploy -->
+	<target name="compile" description="Lint, Audit and then Compile.">
+		<antcall target="init"/>
+
+		<antcall target="lint">
+			<param name="lint.sources" value="out.audit.sources"/>
+			<param name="lint.warning" value="lint_warnings.txt"/>
+		</antcall>
+
+		<antcall target="audit">
+			<param name="audit.sources" value="out.audit.sources"/>
+			<param name="audit.externs" value="out.audit.externs"/>
+			<param name="audit.outfile" value="out.audit.js"/>
+			<param name="audit.warning" value="closure_warnings.txt"/>
+		</antcall>
+
+		<antcall target="concat">
+			<param name="concat.sources" value="out.compress.sources"/>
+			<param name="concat.outfile" value="out.js"/>
+		</antcall>
+
+		<antcall target="compress">
+			<param name="compress.sources" value="out.compress.sources"/>
+			<param name="compress.outfile" value="out.mini.js"/>
+		</antcall>
+	</target>
+
+
+	<!-- Compile for Unit Test -->
+	<target name="compile-utest" description="Check and Compile with specfiles for unit testing.">
+		<antcall target="init"/>
+
+		<antcall target="lint">
+			<param name="lint.sources" value="utest.audit.sources"/>
+			<param name="lint.warning" value="lint_warnings.txt"/>
+		</antcall>
+
+		<antcall target="audit">
+			<param name="audit.sources" value="utest.audit.sources"/>
+			<param name="audit.externs" value="utest.audit.externs"/>
+			<param name="audit.outfile" value="utest.audit.js"/>
+			<param name="audit.warning" value="closure_warnings.txt"/>
+		</antcall>
+
+		<antcall target="concat">
+			<param name="concat.sources" value="utest.compress.sources"/>
+			<param name="concat.outfile" value="out.js"/>
+		</antcall>
+
+		<antcall target="compress">
+			<param name="compress.sources" value="out.compress.sources"/>
+			<param name="compress.outfile" value="out.mini.js"/>
+		</antcall>
+	</target>
+
+
+    <!-- JsDoc commands -->
+
+	<target name="jsdoc2" description="JSDoc: jsdoc-toolkit -- not avarable yet">
+		<delete dir="${jsdoc2_dir}/*"/>
+
+		<exec executable="jsdoc" failonerror="true" output="${err_dir}/jsdoc2_error">
+			<arg line="${src_dir} -d=${jsdoc2_dir}"/>
+		</exec>
+	</target>
+
+	<target name="jsdoc3" description="JSDoc: jsdoc3 -- not avarable yet">
+		<delete dir="${jsdoc3_dir}/*"/>
+
+		<exec executable="jsdoc" failonerror="true" output="${err_dir}/jsdoc3_error">
+			<arg line="${src_dir} -d ${jsdoc3_dir}"/>
+		</exec>
+	</target>
+
+	<target name="yuidoc" description="JSDoc: yuidoc -- not avarable yet">
+		<delete dir="${yuidoc_dir}/*"/>
+
+		<exec executable="yuidoc" failonerror="true" output="${err_dir}/yuidoc_error">
+			<arg line="${src_dir} -o ${yuidoc_dir}"/>
+		</exec>
+	</target>
+
+
+	<!-- List targets -->
+	<target name="usage">
+		<echo message="ant -projecthelp"/>
+		<echo message=""/>
+		<exec executable="ant">
+			<arg line="-projecthelp"/>
+		</exec>
+	</target>
+</project>
