@@ -1,7 +1,6 @@
 /**
  * My next step of "Hello javascript world."</br>
  * namespace functions for Google apps script.
- * @namespace holds namespace control methods.
  */
 var namespace = (function() {
 
@@ -12,7 +11,7 @@ var namespace = (function() {
    * create namespace.
    * @param {string} nsString name space.
    * @param {object} nsObject object to set name space.
-   * @return {object} new namespace
+   * @return {object} new namespace.
    */
   var namespace = function(nsString, nsObject) {
     var parent = global_,
@@ -50,7 +49,7 @@ var namespace = (function() {
   /**
    * require namespace
    * @param {string} required namespace.
-   * @return {object} required object
+   * @return {object} required object.
    */
   var require = function(nsString) {
 
@@ -65,14 +64,17 @@ var namespace = (function() {
         }
         parent = parent[parts[i]];
       }
-      definedNamespaces_[nsString] = {obj: parent};  // at last, parent is the leaf.
+
+      // at last, parent is the leaf.
+      definedNamespaces_[nsString] = {obj: parent};
 
     } else if (!definedNamespaces_[nsString].obj) {
       if (definedNamespaces_[nsString].constructing) {
         throw new Error('loop.');
       } else {
         constructing = true;
-        definedNamespaces_[nsString].obj = create(nsString, definedNamespaces_[nsString].func());
+        definedNamespaces_[nsString].obj =
+          create(nsString, definedNamespaces_[nsString].func());
       }
     }
 
