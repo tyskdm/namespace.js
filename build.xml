@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="ant-template-for-GAS" default="usage" basedir=".">
+<project name="namespace.js" default="usage" basedir=".">
 	<description>ant template for GAS</description>
 	<!--
 	build.xml template for Apache Ant to develop Google Apps Script.
@@ -133,8 +133,8 @@
 			<arg value="--jscomp_off=externsValidation"/>
 			<arg value="--process_jquery_primitives"/>
 
-			<arg line="${audit.src.files}" prefix="--js "/>
-			<arg line="${audit.ext.files}" prefix="--externs "/>
+			<arg line="${audit.src.files}" prefix="--js="/>
+			<arg line="${audit.ext.files}" prefix="--externs="/>
 		</java>
     </target>
 

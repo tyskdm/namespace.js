@@ -1,26 +1,25 @@
 /**
  * My next step of "Hello javascript world."</br>
  * namespace functions for Google apps script.
- * @namespace holds namespace control methods.
  */
-var namespace = (function (globalObject) {
+var namespace = (function(globalObject) {
   var global_ = globalObject;
   var definedNamespaces_ = {};
 
   /**
    * create namespace.
-   * @param {string} nsString name space
-   * @param {object} nsObject object to set name space
-   * @returns {object} new namespace
+   * @param {string} nsString name space.
+   * @param {object} nsObject object to set name space.
+   * @return {object} new namespace object.
    */
-  var namespace = function (nsString, nsObject) {
+  var namespace = function(nsString, nsObject) {
     var parent = global_,
         parts = nsString.split('.'),
         i, l;
 
     for (i = 0, l = parts.length; i < l; i++) {
-      if (typeof parent[parts[i]] === "undefined") {
-        parent[parts[i]] = (i < l-1) ? {} : (nsObject || {});
+      if (typeof parent[parts[i]] === 'undefined') {
+        parent[parts[i]] = (i < l - 1) ? {} : (nsObject || {});
       }
       parent = parent[parts[i]];
     }
@@ -30,13 +29,13 @@ var namespace = (function (globalObject) {
 
   /**
    * define namespace with constructor.
-   * @param {string} namespace name
-   * @param {function} namespace constructor
+   * @param {string} nsString : namespace name.
+   * @param {function} nsFunction : namespace constructor.
    */
-  var define = function (nsString, nsFunction) {
+  var define = function(nsString, nsFunction) {
 
     if (definedNamespaces_[nsString]) {
-      throw new Error("namespce.define MultiPlexed.");
+      throw new Error('namespce.define MultiPlexed.');
     } else {
       definedNamespaces_[nsString] = {
           func: nsFunction,
@@ -48,10 +47,10 @@ var namespace = (function (globalObject) {
 
   /**
    * require namespace
-   * @param {string} required namespace
-   * @returns {object} required object
+   * @param {string} nsString : required namespace.
+   * @return {object} required object.
    */
-  var require = function (nsString) {
+  var require = function(nsString) {
 
     if (!definedNamespaces_[nsString]) {
       var parent = global_,
@@ -59,12 +58,12 @@ var namespace = (function (globalObject) {
           i, l;
 
       for (i = 0, l = parts.length; i < l; i++) {
-        if (typeof parent[parts[i]] === "undefined") {
-          throw new Error("required namespce is not defined.");
+        if (typeof parent[parts[i]] === 'undefined') {
+          throw new Error('required namespce is not defined.');
         }
         parent = parent[parts[i]];
       }
-      definedNamespaces_[nsString] = {obj : parent};
+      definedNamespaces_[nsString] = {obj: parent};
       return parent; // at last, parent is the leaf.
     }
 
@@ -72,11 +71,13 @@ var namespace = (function (globalObject) {
       return definedNamespaces_[nsString].obj;
     }
     if (definedNamespaces_[nsString].constructing) {
-      throw new Error("loop.");
+      throw new Error('loop.');
     }
 
     constructing = true;
-    definedNamespaces_[nsString].obj = namespace(nsString, definedNamespaces_[nsString].func());
+    definedNamespaces_[nsString].obj =
+      namespace(nsString, definedNamespaces_[nsString].func());
+
     return definedNamespaces_[nsString].obj;
   };
 
