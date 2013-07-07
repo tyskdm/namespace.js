@@ -74,7 +74,7 @@ var namespace = (function(globalObject) {
       throw new Error('loop.');
     }
 
-    constructing = true;
+    constructing = true;    // todo: bug
     definedNamespaces_[nsString].obj =
       namespace(nsString, definedNamespaces_[nsString].func());
 
