@@ -1,7 +1,3 @@
-// this function for running debug mode.
-function executeByScript() {
-  rajah.executeJasmine();
-}
 
 describe('namespace', function() {
 

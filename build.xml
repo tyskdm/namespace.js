@@ -24,8 +24,8 @@
 
 	<!-- fileset: source files to be included -->
 	<fileset id="spec" dir="${spec_dir}">
-		<include name="rajah_init.js"/>
 		<include name="namespace.spec.js"/>
+		<include name="rajah_init.js"/>
 	</fileset>
 
 	<fileset id="src" dir="${src_dir}">
