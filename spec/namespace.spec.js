@@ -3,15 +3,15 @@ function executeByScript() {
   rajah.executeJasmine();
 }
 
-describe("namespace", function() {
+describe('namespace', function() {
 
   beforeEach(function() {
     WIL = undefined;
   });
 
-  it("should be able to create object.", function() {
+  it('should be able to create object.', function() {
     expect(WIL).toBeUndefined();
-    var o = namespace("WIL.long.name.space.tree");
+    var o = namespace('WIL.long.name.space.tree');
 
     expect(WIL.long.name.space.tree).toBeDefined();
     expect(WIL.long.name.space.tree).toEqual(o);
@@ -19,11 +19,11 @@ describe("namespace", function() {
   });
 
 
-  it("should not overwrite existing object.", function() {
+  it('should not overwrite existing object.', function() {
     var WIL = {};
     var o = {a: 1, b: 2};
     WIL.obj = o;
-    namespace("WIL.obj");
+    namespace('WIL.obj');
     expect(WIL.obj).toEqual(o);
   });
 
@@ -31,10 +31,10 @@ describe("namespace", function() {
 
 
 
-describe("namespace.define", function() {
+describe('namespace.define', function() {
 
-  var func = function () {
-    namespace.define("WIL.test", function(){ return {a:1, b:2}; } );
+  var func = function() {
+    namespace.define('WIL.test', function() { return {a: 1, b: 2}; });
   };
 
   beforeEach(function() {
@@ -42,11 +42,11 @@ describe("namespace.define", function() {
     namespace.reset_();
   });
 
-  it("should not throw Error to call.", function() {
+  it('should not throw Error to call.', function() {
     expect(func).not.toThrow();
   });
 
-  it("should throw Error to multiplex call.", function() {
+  it('should throw Error to multiplex call.', function() {
 
 //    Logger.log("Hello, world!");
 
@@ -58,132 +58,132 @@ describe("namespace.define", function() {
 });
 
 
-describe("namespace.require", function() {
+describe('namespace.require', function() {
 
   beforeEach(function() {
     WIL = undefined;
     namespace.reset_();
   });
 
-  describe("#Simple", function() {
+  describe('#Simple', function() {
 
-    var func = function () {
-      namespace.define("WIL.test", function(){ return {a:1, b:2}; } );
+    var func = function() {
+      namespace.define('WIL.test', function() { return {a: 1, b: 2}; });
     };
 
-    it("should return object.", function() {
+    it('should return object.', function() {
       func();
-      var o = namespace.require("WIL.test");
+      var o = namespace.require('WIL.test');
       expect(o).toBeDefined();
     });
 
-    it("should create defined object.", function() {
+    it('should create defined object.', function() {
       func();
-      var o = namespace.require("WIL.test");
+      var o = namespace.require('WIL.test');
       expect(WIL.test).toBeDefined();
     });
 
-    it("should create WIL.test as {a:1, b:2}.", function() {
+    it('should create WIL.test as {a:1, b:2}.', function() {
       func();
-      var o = namespace.require("WIL.test");
-      expect(WIL.test).toEqual({a:1, b:2});
+      var o = namespace.require('WIL.test');
+      expect(WIL.test).toEqual({a: 1, b: 2});
     });
 
-    it("should return same object as defined.", function() {
+    it('should return same object as defined.', function() {
       func();
-      var o = namespace.require("WIL.test");
+      var o = namespace.require('WIL.test');
       expect(WIL.test).toEqual(o);
     });
 
   });
 
-  describe("#depend", function() {
+  describe('#depend', function() {
 
-    var moduleE = function () {
-      var f = namespace.require("WIL.moduleF");
+    var moduleE = function() {
+      var f = namespace.require('WIL.moduleF');
       return {e: 1, f: f};
     };
 
-    var moduleF = function () {
-      return {foo:1, bar:2};
+    var moduleF = function() {
+      return {foo: 1, bar: 2};
     };
 
-    it("WIL should not be exist.", function() {
+    it('WIL should not be exist.', function() {
       expect(WIL).toBeUndefined();
     });
 
-    it("should not throw Error", function() {
-      namespace.define("WIL.moduleE", moduleE);
-      namespace.define("WIL.moduleF", moduleF);
+    it('should not throw Error', function() {
+      namespace.define('WIL.moduleE', moduleE);
+      namespace.define('WIL.moduleF', moduleF);
 
       function requireE() {
-        namespace.require("WIL.moduleE");
+        namespace.require('WIL.moduleE');
       }
 
       expect(requireE).not.toThrow();
     });
 
-    it("should return object.", function() {
-      namespace.define("WIL.moduleE", moduleE);
-      namespace.define("WIL.moduleF", moduleF);
+    it('should return object.', function() {
+      namespace.define('WIL.moduleE', moduleE);
+      namespace.define('WIL.moduleF', moduleF);
 
-      var e = namespace.require("WIL.moduleE");
+      var e = namespace.require('WIL.moduleE');
 
       expect(typeof e).toEqual(typeof {});
     });
 
-    it("should return defined object.", function() {
-      namespace.define("WIL.moduleE", moduleE);
-      namespace.define("WIL.moduleF", moduleF);
+    it('should return defined object.', function() {
+      namespace.define('WIL.moduleE', moduleE);
+      namespace.define('WIL.moduleF', moduleF);
 
-      var e = namespace.require("WIL.moduleE");
+      var e = namespace.require('WIL.moduleE');
 
-      expect(e).toEqual( { e:1, f: {foo:1, bar:2}} );
+      expect(e).toEqual({ e: 1, f: {foo: 1, bar: 2}});
     });
 
-    it("should create two modules.", function() {
-      namespace.define("WIL.moduleE", moduleE);
-      namespace.define("WIL.moduleF", moduleF);
+    it('should create two modules.', function() {
+      namespace.define('WIL.moduleE', moduleE);
+      namespace.define('WIL.moduleF', moduleF);
 
       expect(WIL).toBeUndefined();
 
-      namespace.require("WIL.moduleE");
+      namespace.require('WIL.moduleE');
 
       expect(WIL.moduleE).toBeDefined();
       expect(WIL.moduleF).toBeDefined();
     });
 
-    it("should create one modules.", function() {
-      namespace.define("WIL.moduleE", moduleE);
-      namespace.define("WIL.moduleF", moduleF);
+    it('should create one modules.', function() {
+      namespace.define('WIL.moduleE', moduleE);
+      namespace.define('WIL.moduleF', moduleF);
 
       expect(WIL).toBeUndefined();
 
-      namespace.require("WIL.moduleF");
+      namespace.require('WIL.moduleF');
 
       expect(WIL.moduleE).toBeUndefined();
       expect(WIL.moduleF).toBeDefined();
     });
   });
 
-  describe("#Loop", function() {
+  describe('#Loop', function() {
 
-    var moduleA = function () {
-      var b = namespace.require("WIL.moduleB");
-      return {b:b};
+    var moduleA = function() {
+      var b = namespace.require('WIL.moduleB');
+      return {b: b};
     };
 
-    var moduleB = function () {
-      var a = namespace.require("WIL.moduleA");
-      return {a:a};
+    var moduleB = function() {
+      var a = namespace.require('WIL.moduleA');
+      return {a: a};
     };
 
-    it("define looped, then require should throw Error.", function() {
-      namespace.define("WIL.moduleA", moduleA);
-      namespace.define("WIL.moduleB", moduleB);
+    it('define looped, then require should throw Error.', function() {
+      namespace.define('WIL.moduleA', moduleA);
+      namespace.define('WIL.moduleB', moduleB);
 
       function requireA() {
-        namespace.require("WIL.moduleA");
+        namespace.require('WIL.moduleA');
       }
 
       expect(requireA).toThrow();
@@ -193,22 +193,22 @@ describe("namespace.require", function() {
 
 
 
-  describe("#Not defined", function() {
+  describe('#Not defined', function() {
 
-    it("it should throw Error", function() {
+    it('it should throw Error', function() {
       function requireC() {
-        namespace.require("WIL.moduleC");
+        namespace.require('WIL.moduleC');
       }
       expect(requireC).toThrow();
     });
 
-    it("but exist, It should not throw Error", function() {
+    it('but exist, It should not throw Error', function() {
       var g;
       WIL = {};
-      WIL.moduleD = {a:1, b:2, c:3};
+      WIL.moduleD = {a: 1, b: 2, c: 3};
 
-      var requireD = function () {
-        g = namespace.require("WIL.moduleD");
+      var requireD = function() {
+        g = namespace.require('WIL.moduleD');
       };
       expect(requireD).not.toThrow();
       expect(g).toEqual(WIL.moduleD);

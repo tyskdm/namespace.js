@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="ant-template-for-GAS" default="usage" basedir=".">
+<project name="namespace.js" default="usage" basedir=".">
 	<description>ant template for GAS</description>
 	<!--
 	build.xml template for Apache Ant to develop Google Apps Script.
@@ -24,6 +24,7 @@
 
 	<!-- fileset: source files to be included -->
 	<fileset id="spec" dir="${spec_dir}">
+		<include name="spec.init.js"/>
 		<include name="namespace.spec.js"/>
 	</fileset>
 
@@ -235,12 +236,12 @@
 
 		<antcall target="concat">
 			<param name="concat.sources" value="utest.compress.sources"/>
-			<param name="concat.outfile" value="out.js"/>
+			<param name="concat.outfile" value="utest.js"/>
 		</antcall>
 
 		<antcall target="compress">
-			<param name="compress.sources" value="out.compress.sources"/>
-			<param name="compress.outfile" value="out.mini.js"/>
+			<param name="compress.sources" value="utest.compress.sources"/>
+			<param name="compress.outfile" value="utest.mini.js"/>
 		</antcall>
 	</target>
 
