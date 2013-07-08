@@ -11,11 +11,11 @@ describe('namespace', function() {
 
   it('should be able to create object.', function() {
     expect(WIL).toBeUndefined();
-    var o = namespace('WIL.long.name.space.tree');
+    var o = namespace('WIL.name.space.tree');
 
-    expect(WIL.long.name.space.tree).toBeDefined();
-    expect(WIL.long.name.space.tree).toEqual(o);
-    expect(typeof(WIL.long.name.space.tree)).toBe(typeof{});
+    expect(WIL.name.space.tree).toBeDefined();
+    expect(WIL.name.space.tree).toEqual(o);
+    expect(typeof(WIL.name.space.tree)).toBe(typeof{});
   });
 
 
