@@ -133,8 +133,8 @@
 			<arg value="--jscomp_off=externsValidation"/>
 			<arg value="--process_jquery_primitives"/>
 
-			<arg line="${audit.src.files}" prefix="--js "/>
-			<arg line="${audit.ext.files}" prefix="--externs "/>
+			<arg line="${audit.src.files}" prefix="--js="/>
+			<arg line="${audit.ext.files}" prefix="--externs="/>
 		</java>
     </target>
 
