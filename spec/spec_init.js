@@ -17,11 +17,6 @@ function doGet(e) {
   return rajah.doGet(e);
 }
 
-//this function for running debug mode.
-function executeByScript() {
-  rajah.executeJasmine();
-}
-
 function executeByScript() {
   rajah.executeJasmine();
 }
@@ -41,5 +36,3 @@ var setInterval = function(func, t) {
 var clearInterval = function(id) {
   rajah.clearInterval(id);
 };
-
-
