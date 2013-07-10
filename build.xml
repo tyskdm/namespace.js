@@ -24,13 +24,15 @@
 
 
 	<!-- fileset: source files to be included -->
-	<fileset id="spec" dir="${spec_dir}">
-		<exclude name="*.init.js"/>
+	<fileset id="spec.1st" dir="${spec_dir}">
+		<include name="rajah.init.js"/>
+	</fileset>
+
+	<fileset id="spec.2nd" dir="${spec_dir}">
 		<include name="namespace.spec.js"/>
 	</fileset>
 
 	<fileset id="src" dir="${src_dir}">
-		<exclude name="*.init.js"/>
 		<include name="namespace.js"/>
 	</fileset>
 
@@ -38,6 +40,7 @@
 	</fileset>
 
 	<fileset id="ext" dir="${lib_dir}">
+		<include name="jasmine.js"/>
 	</fileset>
 
 
@@ -62,7 +65,8 @@
 
 
 	<path id="utest.audit.sources">
-		<fileset refid="spec"/>
+		<fileset refid="spec.1st"/>
+		<fileset refid="spec.2nd"/>
 		<fileset refid="src"/>
 	</path>
 
@@ -72,7 +76,8 @@
 	</path>
 
 	<path id="utest.compress.sources">
-		<fileset refid="spec"/>
+		<fileset refid="spec.1st"/>
+		<fileset refid="spec.2nd"/>
 		<fileset refid="src"/>
 		<fileset refid="lib"/>
 	</path>
@@ -86,11 +91,27 @@
 	<property name="closure-compiler.jar-path" location="/usr/local/closure-compiler/compiler.jar"/>
 
 	<taskdef name="jscomp"
-			 classname="com.google.javascript.jscomp.ant.CompileTask"
-			 classpath="${closure-compiler.jar-path}"/>
+		classname="com.google.javascript.jscomp.ant.CompileTask"
+		classpath="${closure-compiler.jar-path}" />
 
 
 	<!-- Sub targets: called by Main targets with some parameters -->
+
+	<!-- init -->
+	<target name="init">
+		<delete dir="${err_dir}/**/*"/>
+		<delete dir="${tmp_dir}/**/*"/>
+
+		<!-- Create the time stamp -->
+		<tstamp>
+			<format property="DATE" pattern="yyyy/MM/dd"/>
+			<format property="TIME" pattern="HH:mm:ss"/>
+			<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
+		</tstamp>
+		<echo output="${tmp_dir}/tstamp.js" message="/* build: ${NOW} */"/>
+		<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
+	</target>
+
 
 	<!-- lint
 		source files: path refid = lint.sources
@@ -128,7 +149,7 @@
 			error="${err_dir}/${audit.warning}"
 			fork="true" >
 
-                        <arg value="--warning_level=VERBOSE"/>
+			<arg value="--warning_level=VERBOSE"/>
 
 			<!-- Options:
 				accessControls, ambiguousFunctionDecl, checkRegExp,
@@ -143,12 +164,12 @@
 				unknownDefines, uselessCode, visibility
 			-->
 
-			<arg value="=checkRegExp"		prefix="--jscomp_warning"/>
-			<arg value="=checkTypes" 		prefix="--jscomp_warning"/>
-			<arg value="=nonStandardJsDocs"		prefix="--jscomp_warning"/>
+			<arg value="=checkRegExp"				prefix="--jscomp_warning"/>
+			<arg value="=checkTypes" 				prefix="--jscomp_warning"/>
+			<arg value="=nonStandardJsDocs"			prefix="--jscomp_warning"/>
 			<arg value="=internetExplorerChecks"	prefix="--jscomp_warning"/>
-			<arg value="=invalidCasts"		prefix="--jscomp_warning"/>
-			<arg value="=externsValidation"		prefix="--jscomp_warning"/>
+			<arg value="=invalidCasts"				prefix="--jscomp_warning"/>
+			<arg value="=externsValidation"			prefix="--jscomp_warning"/>
 
 			<arg value="--process_jquery_primitives"/>
 
@@ -166,6 +187,7 @@
 		<mkdir  dir="${out_dir}"/>
 
 		<concat destfile="${out_dir}/${concat.outfile}">
+			<path path="${tmp_dir}/tstamp.js"/>
 			<path refid="${concat.sources}"/>
 		</concat>
 	</target>
@@ -179,23 +201,14 @@
 		<mkdir  dir="${out_dir}"/>
 
 		<jscomp compilationLevel="simple" warning="quiet"
-				debug="false" output="${out_dir}/${compress.outfile}">
+				debug="false" output="${tmp_dir}/${compress.outfile}">
 			<path refid="${compress.sources}"/>
 		</jscomp>
-	</target>
 
-
-	<!-- init -->
-	<target name="init">
-		<delete dir="${err_dir}/*"/>
-		<delete dir="${tmp_dir}/*"/>
-
-		<!-- Create the time stamp -->
-		<tstamp>
-			<format property="DATE" pattern="yyyy/MM/dd"/>
-			<format property="TIME" pattern="HH:mm:ss"/>
-			<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
-		</tstamp>
+		<concat destfile="${out_dir}/${compress.outfile}">
+			<path path="${tmp_dir}/tstamp.js"/>
+			<path path="${tmp_dir}/${compress.outfile}"/>
+		</concat>
 	</target>
 
 
@@ -216,14 +229,14 @@
 
 		<antcall target="lint">
 			<param name="lint.sources" value="out.audit.sources"/>
-			<param name="lint.warning" value="lint_warnings.txt"/>
+			<param name="lint.warning" value="out.lint_warnings.txt"/>
 		</antcall>
 
 		<antcall target="audit">
 			<param name="audit.sources" value="out.audit.sources"/>
 			<param name="audit.externs" value="out.audit.externs"/>
 			<param name="audit.outfile" value="out.audit.js"/>
-			<param name="audit.warning" value="closure_warnings.txt"/>
+			<param name="audit.warning" value="out.closure_warnings.txt"/>
 		</antcall>
 
 		<antcall target="concat">
@@ -244,14 +257,14 @@
 
 		<antcall target="lint">
 			<param name="lint.sources" value="utest.audit.sources"/>
-			<param name="lint.warning" value="lint_warnings.txt"/>
+			<param name="lint.warning" value="utest.lint_warnings.txt"/>
 		</antcall>
 
 		<antcall target="audit">
 			<param name="audit.sources" value="utest.audit.sources"/>
 			<param name="audit.externs" value="utest.audit.externs"/>
 			<param name="audit.outfile" value="utest.audit.js"/>
-			<param name="audit.warning" value="closure_warnings.txt"/>
+			<param name="audit.warning" value="utest.closure_warnings.txt"/>
 		</antcall>
 
 		<antcall target="concat">
