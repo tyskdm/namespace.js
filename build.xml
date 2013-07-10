@@ -14,6 +14,7 @@
 	<property name="ext_dir"		location="${lib_dir}/ext"/>
 
 	<property name="err_dir"		location="${basedir}/err"/>
+	<property name="tmp_dir"		location="${basedir}/tmp"/>
 	<property name="out_dir"		location="${basedir}/out"/>
 
 	<property name="jsdoc_dir"		location="${basedir}/jsdoc"/>
@@ -127,21 +128,37 @@
 			error="${err_dir}/${audit.warning}"
 			fork="true" >
 
-			<arg value="--jscomp_warning=checkRegExp"/>
-			<arg value="--jscomp_off=checkTypes"/>
-			<arg value="--jscomp_off=nonStandardJsDocs"/>
-			<arg value="--jscomp_warning=internetExplorerChecks"/>
-			<arg value="--jscomp_warning=invalidCasts"/>
-			<arg value="--jscomp_off=externsValidation"/>
+                        <arg value="--warning_level=VERBOSE"/>
+
+			<!-- Options:
+				accessControls, ambiguousFunctionDecl, checkRegExp,
+				checkStructDictInheritance, checkTypes, checkVars,
+				const, constantProperty, deprecated,
+				duplicateMessage, es5Strict, externsValidation,
+				fileoverviewTags, globalThis, internetExplorerChecks,
+				invalidCasts, misplacedTypeAnnotation,
+				missingProperties, missingReturn, nonStandardJsDocs,
+				reportUnknownTypes, suspiciousCode, strictModuleDepCheck,
+				typeInvalidation, undefinedNames, undefinedVars,
+				unknownDefines, uselessCode, visibility
+			-->
+
+			<arg value="=checkRegExp"		prefix="--jscomp_warning"/>
+			<arg value="=checkTypes" 		prefix="--jscomp_warning"/>
+			<arg value="=nonStandardJsDocs"		prefix="--jscomp_warning"/>
+			<arg value="=internetExplorerChecks"	prefix="--jscomp_warning"/>
+			<arg value="=invalidCasts"		prefix="--jscomp_warning"/>
+			<arg value="=externsValidation"		prefix="--jscomp_warning"/>
+
 			<arg value="--process_jquery_primitives"/>
 
 			<arg line="${audit.src.files}" prefix="--js="/>
 			<arg line="${audit.ext.files}" prefix="--externs="/>
 		</java>
-    </target>
+	</target>
 
 
-    <!-- Concat
+	<!-- Concat
 		source files: path refid = concat.sources
 		output file:  file name = concat.outfile
 	-->
@@ -154,7 +171,7 @@
 	</target>
 
 
-    <!-- Compress
+	<!-- Compress
 		source files: path refid = compress.sources
 		output file:  filename = compress.outfile
 	-->
@@ -165,12 +182,13 @@
 				debug="false" output="${out_dir}/${compress.outfile}">
 			<path refid="${compress.sources}"/>
 		</jscomp>
-    </target>
+	</target>
 
 
 	<!-- init -->
 	<target name="init">
 		<delete dir="${err_dir}/*"/>
+		<delete dir="${tmp_dir}/*"/>
 
 		<!-- Create the time stamp -->
 		<tstamp>
@@ -186,6 +204,7 @@
 	<!-- clean up project directories -->
 	<target name="clean" description="Clean up project directries.">
 		<delete dir="${err_dir}"/>
+		<delete dir="${tmp_dir}"/>
 		<delete dir="${out_dir}"/>
 		<delete dir="${jsdoc_dir}"/>
 	</target>
@@ -247,7 +266,7 @@
 	</target>
 
 
-    <!-- JsDoc commands -->
+	<!-- JsDoc commands -->
 
 	<target name="jsdoc2" description="JSDoc: jsdoc-toolkit -- not avarable yet">
 		<delete dir="${jsdoc2_dir}/*"/>
