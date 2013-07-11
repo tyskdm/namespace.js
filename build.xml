@@ -41,6 +41,7 @@
 
 	<fileset id="ext" dir="${ext_dir}">
 		<include name="jasmine.js"/>
+		<include name="rajah.ext.js"/>
 	</fileset>
 
 
@@ -68,11 +69,11 @@
 		<fileset refid="spec.1st"/>
 		<fileset refid="spec.2nd"/>
 		<fileset refid="src"/>
-		<fileset refid="ext"/>
 	</path>
 
 	<path id="utest.audit.externs">
 		<fileset refid="lib"/>
+		<fileset refid="ext"/>
 	</path>
 
 	<path id="utest.compress.sources">
@@ -108,7 +109,9 @@
 			<format property="TIME" pattern="HH:mm:ss"/>
 			<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
 		</tstamp>
-		<echo output="${tmp_dir}/tstamp.js" message="/* build: ${NOW} */"/>
+		<echo output="${tmp_dir}/tstamp.js" message="// ${ant.project.name}"/>
+		<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
+		<echo output="${tmp_dir}/tstamp.js" message="// build: ${NOW}" append="yes"/>
 		<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
 	</target>
 
@@ -138,7 +141,7 @@
 		warning file: filename = audit.warning
 
 		[ return value ]
-		error infor:  property = autit.result
+		error info: property = autit.result
 	-->
 	<target name="audit">
 		<mkdir dir="${err_dir}"/>
@@ -168,6 +171,7 @@
 			-->
 			<arg value="=accessControls" 			prefix="--jscomp_warning"/>
 			<arg value="=checkRegExp"				prefix="--jscomp_warning"/>
+			<arg value="=checkTypes"				prefix="--jscomp_error"/>
 			<arg value="=const"						prefix="--jscomp_warning"/>
 			<arg value="=internetExplorerChecks"	prefix="--jscomp_warning"/>
 			<arg value="=visibility"				prefix="--jscomp_warning"/>

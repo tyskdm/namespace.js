@@ -1,8 +1,5 @@
 
-foooo();
-
-
-describe(555, 'namespace', function() {
+describe('namespace', function() {
 
   beforeEach(function() {
     WIL = undefined;
