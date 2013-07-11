@@ -35,7 +35,7 @@ var namespace = (function(globalObject) {
   /**
    * define namespace with constructor.
    * @param {string} nsString       namespace name.
-   * @param {function} nsFunction   namespace constructor.
+   * @param {function()} nsFunction   namespace constructor.
    */
   var define = function(nsString, nsFunction) {
 

@@ -11,7 +11,7 @@
 	<property name="src_dir"		location="${basedir}/src"/>
 
 	<property name="lib_dir"		location="${basedir}/lib"/>
-	<property name="ext_dir"		location="${lib_dir}/ext"/>
+	<property name="ext_dir"		location="${basedir}/ext"/>
 
 	<property name="err_dir"		location="${basedir}/err"/>
 	<property name="tmp_dir"		location="${basedir}/tmp"/>
@@ -39,7 +39,7 @@
 	<fileset id="lib" dir="${lib_dir}">
 	</fileset>
 
-	<fileset id="ext" dir="${lib_dir}">
+	<fileset id="ext" dir="${ext_dir}">
 		<include name="jasmine.js"/>
 	</fileset>
 
@@ -68,11 +68,11 @@
 		<fileset refid="spec.1st"/>
 		<fileset refid="spec.2nd"/>
 		<fileset refid="src"/>
+		<fileset refid="ext"/>
 	</path>
 
 	<path id="utest.audit.externs">
 		<fileset refid="lib"/>
-		<fileset refid="ext"/>
 	</path>
 
 	<path id="utest.compress.sources">
@@ -123,9 +123,9 @@
 		<pathconvert property="lint.files" refid="${lint.sources}" pathsep=" "/>
 
 		<exec executable="gjslint" failonerror="true" output="${err_dir}/${lint.warning}">
-			<!-- arg value="" / -->
-			<!-- arg value="" / -->
-			<!-- arg value="" / -->
+			<arg value="--custom_jsdoc_tags=''"/>
+			<arg value="--max_line_length=100"/>
+
 			<arg line="${lint.files}"/>
 		</exec>
 	</target>
@@ -153,29 +153,24 @@
 			errorproperty="audit.result"
 			fork="true" >
 
+			<!-- compilation_level
+				[ WHITESPACE_ONLY | SIMPLE_OPTIMIZATIONS | ADVANCED_OPTIMIZATIONS ]
+			-->
+			<arg value="--compilation_level=SIMPLE_OPTIMIZATIONS"/>
+
+			<!-- warning_level
+				[ QUIET | DEFAULT | VERBOSE ]
+			-->
 			<arg value="--warning_level=VERBOSE"/>
 
-			<!-- Options:
-				accessControls, ambiguousFunctionDecl, checkRegExp,
-				checkStructDictInheritance, checkTypes, checkVars,
-				const, constantProperty, deprecated,
-				duplicateMessage, es5Strict, externsValidation,
-				fileoverviewTags, globalThis, internetExplorerChecks,
-				invalidCasts, misplacedTypeAnnotation,
-				missingProperties, missingReturn, nonStandardJsDocs,
-				reportUnknownTypes, suspiciousCode, strictModuleDepCheck,
-				typeInvalidation, undefinedNames, undefinedVars,
-				unknownDefines, uselessCode, visibility
+			<!-- options:
+				https://code.google.com/p/closure-compiler/wiki/Warnings
 			-->
-
+			<arg value="=accessControls" 			prefix="--jscomp_warning"/>
 			<arg value="=checkRegExp"				prefix="--jscomp_warning"/>
-			<arg value="=checkTypes" 				prefix="--jscomp_warning"/>
-			<arg value="=nonStandardJsDocs"			prefix="--jscomp_warning"/>
+			<arg value="=const"						prefix="--jscomp_warning"/>
 			<arg value="=internetExplorerChecks"	prefix="--jscomp_warning"/>
-			<arg value="=invalidCasts"				prefix="--jscomp_warning"/>
-			<arg value="=externsValidation"			prefix="--jscomp_warning"/>
-
-			<arg value="--process_jquery_primitives"/>
+			<arg value="=visibility"				prefix="--jscomp_warning"/>
 
 			<arg line="${audit.src.files}" prefix="--js="/>
 			<arg line="${audit.ext.files}" prefix="--externs="/>
