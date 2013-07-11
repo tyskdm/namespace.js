@@ -11,28 +11,28 @@
  *  5. and access web page!!!
  */
 
-rajah.init(this);
+Rajah.init(this);
 
 function doGet(e) {
-  return rajah.doGet(e);
+  return Rajah.doGet(e);
 }
 
 function executeByScript() {
-  rajah.executeJasmine();
+  Rajah.executeJasmine();
 }
 
 var setTimeout = function(func, t) {
-  return rajah.setTimeout(func, t);
+  return Rajah.setTimeout(func, t);
 };
 
 var clearTimeout = function(id) {
-  rajah.clearTimeout(id);
+  Rajah.clearTimeout(id);
 };
 
 var setInterval = function(func, t) {
-  return rajah.setInterval(func, t);
+  return Rajah.setInterval(func, t);
 };
 
 var clearInterval = function(id) {
-  rajah.clearInterval(id);
+  Rajah.clearInterval(id);
 };

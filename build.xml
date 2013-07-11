@@ -136,6 +136,9 @@
 		extern files: path refid = audit.externs
 		output file:  fileneme = audit.outfile
 		warning file: filename = audit.warning
+
+		[ return value ]
+		error infor:  property = autit.result
 	-->
 	<target name="audit">
 		<mkdir dir="${err_dir}"/>
@@ -145,8 +148,9 @@
 		<pathconvert property="audit.ext.files" refid="${audit.externs}" pathsep=" "/>
 
 		<java jar="${closure-compiler.jar-path}"
-			output="${out_dir}/${audit.outfile}"
+			output="${tmp_dir}/${audit.outfile}"
 			error="${err_dir}/${audit.warning}"
+			errorproperty="audit.result"
 			fork="true" >
 
 			<arg value="--warning_level=VERBOSE"/>
@@ -238,6 +242,7 @@
 			<param name="audit.outfile" value="out.audit.js"/>
 			<param name="audit.warning" value="out.closure_warnings.txt"/>
 		</antcall>
+		<!-- fail if="audit.result" message="${audit.result}"/ -->
 
 		<antcall target="concat">
 			<param name="concat.sources" value="out.compress.sources"/>
@@ -266,6 +271,7 @@
 			<param name="audit.outfile" value="utest.audit.js"/>
 			<param name="audit.warning" value="utest.closure_warnings.txt"/>
 		</antcall>
+		<!-- fail if="audit.result" message="${audit.result}"/ -->
 
 		<antcall target="concat">
 			<param name="concat.sources" value="utest.compress.sources"/>
