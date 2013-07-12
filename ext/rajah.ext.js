@@ -13,3 +13,11 @@ var Rajah = {};
  */
 Rajah.init = function(globalObject) {};
 
+/**
+ * @param {Object} e
+ */
+Rajah.doGet = function(e) {};
+
+/**
+ */
+Rajah.executeJasmine = function() {};

@@ -1,29 +1,45 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<project name="namespace.js" default="usage" basedir=".">
+<!--
+build.xml template for Apache Ant to develop Google Apps Script.
+version 0.6.0  2013.07.13  update audit-task that can set each options off/warn/error.
+version 0.4.0  2013.07.05
+-->
+<project name="ant-template-for-GAS" default="usage" basedir=".">
 	<description>ant template for GAS</description>
-	<!--
-	build.xml template for Apache Ant to develop Google Apps Script.
-	version 0.4.0  2013.07.05
-	-->
+
+	<!-- package information -->
+	<property name="package.name"		value="namespace.js"/>
+	<property name="package.description"	value="create, define and require namespace objects."/>
+	<property name="package.website"	value="https://github.com/tyskdm/namespace.js"/>
+	<property name="package.version"	value="0.6.1"/>
+
+	<property name="package.author.name"	value="Tsuyoshi Kodama"/>
+	<property name="package.author.email"	value="tsuyoshi.kodama@gmail.com"/>
+
+	<property name="package.licenses.type"	value="MIT"/>
+	<property name="package.licenses.file"	value="MIT.LICENSE"/>
+
 
 	<!-- directories -->
-	<property name="spec_dir"		location="${basedir}/spec"/>
-	<property name="src_dir"		location="${basedir}/src"/>
+	<property name="spec_dir"	location="${basedir}/spec"/>
+	<property name="src_dir"	location="${basedir}/src"/>
 
-	<property name="lib_dir"		location="${basedir}/lib"/>
-	<property name="ext_dir"		location="${basedir}/ext"/>
+	<property name="lib_dir"	location="${basedir}/lib"/>
+	<property name="ext_dir"	location="${basedir}/ext"/>
 
-	<property name="err_dir"		location="${basedir}/err"/>
-	<property name="tmp_dir"		location="${basedir}/tmp"/>
-	<property name="out_dir"		location="${basedir}/out"/>
+	<property name="err_dir"	location="${basedir}/err"/>
+	<property name="tmp_dir"	location="${basedir}/tmp"/>
 
-	<property name="jsdoc_dir"		location="${basedir}/jsdoc"/>
-	<property name="jsdoc2_dir"		location="${jsdoc_dir}/jsdoc2"/>
-	<property name="jsdoc3_dir"		location="${jsdoc_dir}/jsdoc3"/>
-	<property name="yuidoc_dir"		location="${jsdoc_dir}/yuidoc"/>
+	<property name="out_dir"	location="${basedir}/out"/>
+	<property name="dist_dir"	location="${basedir}/dist"/>
+
+	<property name="jsdoc_dir"	location="${basedir}/jsdoc"/>
+	<property name="jsdoc2_dir"	location="${jsdoc_dir}/jsdoc2"/>
+	<property name="jsdoc3_dir"	location="${jsdoc_dir}/jsdoc3"/>
+	<property name="yuidoc_dir"	location="${jsdoc_dir}/yuidoc"/>
 
 
-	<!-- fileset: source files to be included -->
+	<!-- fileset: source files list -->
 	<fileset id="spec.1st" dir="${spec_dir}">
 		<include name="rajah.init.js"/>
 	</fileset>
@@ -39,9 +55,12 @@
 	<fileset id="lib" dir="${lib_dir}">
 	</fileset>
 
+	<fileset id="lib_ext" dir="${lib_dir}">
+	</fileset>
+
 	<fileset id="ext" dir="${ext_dir}">
-		<include name="jasmine.js"/>
 		<include name="rajah.ext.js"/>
+		<include name="jasmine.js"/>
 	</fileset>
 
 
@@ -51,7 +70,7 @@
 	</path>
 
 	<path id="out.audit.externs">
-		<fileset refid="lib"/>
+		<fileset refid="lib_ext"/>
 		<fileset refid="ext"/>
 	</path>
 
@@ -72,7 +91,7 @@
 	</path>
 
 	<path id="utest.audit.externs">
-		<fileset refid="lib"/>
+		<fileset refid="lib_ext"/>
 		<fileset refid="ext"/>
 	</path>
 
@@ -88,7 +107,7 @@
 	</path>
 
 
-	<!-- tools definitions -->
+	<!-- Tools definitions -->
 	<property name="closure-compiler.jar-path" location="/usr/local/closure-compiler/compiler.jar"/>
 
 	<taskdef name="jscomp"
@@ -96,90 +115,119 @@
 		classpath="${closure-compiler.jar-path}" />
 
 
-	<!-- Sub targets: called by Main targets with some parameters -->
+	<!-- Macro definitions -->
 
 	<!-- init -->
-	<target name="init">
-		<delete dir="${err_dir}/**/*"/>
-		<delete dir="${tmp_dir}/**/*"/>
+	<macrodef name="init">
+		<sequential>
+			<delete dir="${err_dir}/**/*"/>
+			<delete dir="${tmp_dir}/**/*"/>
 
-		<!-- Create the time stamp -->
-		<tstamp>
-			<format property="DATE" pattern="yyyy/MM/dd"/>
-			<format property="TIME" pattern="HH:mm:ss"/>
-			<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
-		</tstamp>
-		<echo output="${tmp_dir}/tstamp.js" message="// ${ant.project.name}"/>
-		<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
-		<echo output="${tmp_dir}/tstamp.js" message="// build: ${NOW}" append="yes"/>
-		<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
-	</target>
+			<!-- Create the time stamp -->
+			<tstamp>
+				<format property="DATE" pattern="yyyy/MM/dd"/>
+				<format property="TIME" pattern="HH:mm:ss"/>
+				<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
+			</tstamp>
+			<echo output="${tmp_dir}/tstamp.js" message="// ${ant.project.name}"/>
+			<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
+			<echo output="${tmp_dir}/tstamp.js" message="// build: ${NOW}" append="yes"/>
+			<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
+		</sequential>
+	</macrodef>
 
 
 	<!-- lint
-		source files: path refid = lint.sources
-		warning file: filename = lint.warning
+		attribute sources // path refid of source files
+		attribute target  // filename of warning output
 	-->
-	<target name="lint">
-		<mkdir dir="${err_dir}"/>
+	<macrodef name="lint">
+		<attribute name="target"/>
+		<attribute name="sources"/>
+		<sequential>
+			<mkdir dir="${err_dir}"/>
 
-		<pathconvert property="lint.files" refid="${lint.sources}" pathsep=" "/>
+			<pathconvert property="lint.files" refid="@{sources}" pathsep=" "/>
 
-		<exec executable="gjslint" failonerror="true" output="${err_dir}/${lint.warning}">
-			<arg value="--custom_jsdoc_tags=''"/>
-			<arg value="--max_line_length=100"/>
+			<exec executable="gjslint" failonerror="true" output="${err_dir}/@{target}">
+				<arg value="--max_line_length=100"/>
 
-			<arg line="${lint.files}"/>
-		</exec>
-	</target>
+				<arg line="${lint.files}"/>
+			</exec>
+		</sequential>
+	</macrodef>
 
 
 	<!-- audit
-		source files: path refid = audit.sources
-		extern files: path refid = audit.externs
-		output file:  fileneme = audit.outfile
-		warning file: filename = audit.warning
-
-		[ return value ]
-		error info: property = autit.result
+		source files: path refid = sources
+		extern files: path refid = externs
+		output file:  fileneme = target
+		warning file: filename = warning
 	-->
-	<target name="audit">
-		<mkdir dir="${err_dir}"/>
-		<mkdir dir="${out_dir}"/>
+	<macrodef name="audit">
+		<attribute name="target"/>
+		<attribute name="sources"/>
+		<attribute name="externs"/>
+		<attribute name="warning"/>
+		<sequential>
+			<mkdir dir="${err_dir}"/>
+			<mkdir dir="${out_dir}"/>
 
-		<pathconvert property="audit.src.files" refid="${audit.sources}" pathsep=" "/>
-		<pathconvert property="audit.ext.files" refid="${audit.externs}" pathsep=" "/>
+			<pathconvert property="audit.src.files" refid="@{sources}" pathsep=" "/>
+			<pathconvert property="audit.ext.files" refid="@{externs}" pathsep=" "/>
 
-		<java jar="${closure-compiler.jar-path}"
-			output="${tmp_dir}/${audit.outfile}"
-			error="${err_dir}/${audit.warning}"
-			errorproperty="audit.result"
-			fork="true" >
+			<java jar="${closure-compiler.jar-path}"
+				output="${tmp_dir}/@{target}"
+				error="${err_dir}/@{warning}"
+				failonerror="true"
+				fork="true" >
 
-			<!-- compilation_level
-				[ WHITESPACE_ONLY | SIMPLE_OPTIMIZATIONS | ADVANCED_OPTIMIZATIONS ]
-			-->
-			<arg value="--compilation_level=SIMPLE_OPTIMIZATIONS"/>
+				<!-- compilation_level
+					[ WHITESPACE_ONLY | SIMPLE_OPTIMIZATIONS | ADVANCED_OPTIMIZATIONS ]
+				-->
+				<arg value="--compilation_level=SIMPLE_OPTIMIZATIONS"/>
 
-			<!-- warning_level
-				[ QUIET | DEFAULT | VERBOSE ]
-			-->
-			<arg value="--warning_level=VERBOSE"/>
+				<!-- warning_level
+					[ QUIET | DEFAULT | VERBOSE ]
+				-->
+				<arg value="--warning_level=DEFAULT"/>
 
-			<!-- options:
-				https://code.google.com/p/closure-compiler/wiki/Warnings
-			-->
-			<arg value="=accessControls" 			prefix="--jscomp_warning"/>
-			<arg value="=checkRegExp"				prefix="--jscomp_warning"/>
-			<arg value="=checkTypes"				prefix="--jscomp_error"/>
-			<arg value="=const"						prefix="--jscomp_warning"/>
-			<arg value="=internetExplorerChecks"	prefix="--jscomp_warning"/>
-			<arg value="=visibility"				prefix="--jscomp_warning"/>
+				<!-- options:
+					https://code.google.com/p/closure-compiler/wiki/Warnings
+					[ jscomp_off | jscomp_warning | jscomp_error ]
+				-->
+				<arg value="=accessControls"		prefix="--jscomp_warning"/>
+				<arg value="=ambiguousFunctionDecl"	prefix="--jscomp_warning"/>
+				<arg value="=checkDebuggerStatement"	prefix="--jscomp_warning"/>
+				<arg value="=checkRegExp"		prefix="--jscomp_warning"/>
+				<arg value="=checkTypes"		prefix="--jscomp_warning"/>
+				<arg value="=checkVars"			prefix="--jscomp_warning"/>
+				<arg value="=const"			prefix="--jscomp_warning"/>
+				<arg value="=constantProperty"		prefix="--jscomp_warning"/>
+				<arg value="=deprecated"		prefix="--jscomp_warning"/>
+				<arg value="=duplicate"			prefix="--jscomp_warning"/>
+				<arg value="=es5Strict"			prefix="--jscomp_warning"/>
+				<arg value="=externsValidation"		prefix="--jscomp_warning"/>
+				<arg value="=fileoverviewTags"		prefix="--jscomp_warning"/>
+				<arg value="=globalThis"		prefix="--jscomp_warning"/>
+				<arg value="=internetExplorerChecks"	prefix="--jscomp_off"/>
+				<arg value="=invalidCasts"		prefix="--jscomp_warning"/>
+				<arg value="=missingProperties"		prefix="--jscomp_warning"/>
+				<arg value="=nonStandardJsDocs"		prefix="--jscomp_warning"/>
+				<arg value="=strictModuleDepCheck"	prefix="--jscomp_off"/>
+				<arg value="=suspiciousCode"		prefix="--jscomp_warning"/>
+				<arg value="=undefinedNames"		prefix="--jscomp_warning"/>
+				<arg value="=undefinedVars"		prefix="--jscomp_warning"/>
+				<arg value="=unknownDefines"		prefix="--jscomp_warning"/>
+				<arg value="=uselessCode"		prefix="--jscomp_warning"/>
+				<arg value="=visibility"		prefix="--jscomp_warning"/>
 
-			<arg line="${audit.src.files}" prefix="--js="/>
-			<arg line="${audit.ext.files}" prefix="--externs="/>
-		</java>
-	</target>
+
+				<arg line="${audit.src.files}" prefix="--js="/>
+				<arg line="${audit.ext.files}" prefix="--externs="/>
+			</java>
+		</sequential>
+	</macrodef>
 
 
 	<!-- Concat
@@ -204,7 +252,8 @@
 		<mkdir  dir="${out_dir}"/>
 
 		<jscomp compilationLevel="simple" warning="quiet"
-				debug="false" output="${tmp_dir}/${compress.outfile}">
+			debug="false" output="${tmp_dir}/${compress.outfile}">
+
 			<path refid="${compress.sources}"/>
 		</jscomp>
 
@@ -215,7 +264,7 @@
 	</target>
 
 
-	<!-- Main targets -->
+	<!-- Targets -->
 
 	<!-- clean up project directories -->
 	<target name="clean" description="Clean up project directries.">
@@ -226,22 +275,17 @@
 	</target>
 
 
-	<!-- Compile for deploy -->
+	<!-- Compile -->
 	<target name="compile" description="Lint, Audit and then Compile.">
-		<antcall target="init"/>
+		<init/>
 
-		<antcall target="lint">
-			<param name="lint.sources" value="out.audit.sources"/>
-			<param name="lint.warning" value="out.lint_warnings.txt"/>
-		</antcall>
+		<lint	target="out.lint_warnings.txt"
+			sources="out.audit.sources" />
 
-		<antcall target="audit">
-			<param name="audit.sources" value="out.audit.sources"/>
-			<param name="audit.externs" value="out.audit.externs"/>
-			<param name="audit.outfile" value="out.audit.js"/>
-			<param name="audit.warning" value="out.closure_warnings.txt"/>
-		</antcall>
-		<!-- fail if="audit.result" message="${audit.result}"/ -->
+		<audit	target="out.audit.js"
+			sources="out.audit.sources"
+			externs="out.audit.externs"
+			warning="out.closure_warnings.txt" />
 
 		<antcall target="concat">
 			<param name="concat.sources" value="out.compress.sources"/>
@@ -257,20 +301,15 @@
 
 	<!-- Compile for Unit Test -->
 	<target name="compile-utest" description="Check and Compile with specfiles for unit testing.">
-		<antcall target="init"/>
+		<init/>
 
-		<antcall target="lint">
-			<param name="lint.sources" value="utest.audit.sources"/>
-			<param name="lint.warning" value="utest.lint_warnings.txt"/>
-		</antcall>
+		<lint	target="utest.lint_warnings.txt"
+			sources="utest.audit.sources" />
 
-		<antcall target="audit">
-			<param name="audit.sources" value="utest.audit.sources"/>
-			<param name="audit.externs" value="utest.audit.externs"/>
-			<param name="audit.outfile" value="utest.audit.js"/>
-			<param name="audit.warning" value="utest.closure_warnings.txt"/>
-		</antcall>
-		<!-- fail if="audit.result" message="${audit.result}"/ -->
+		<audit	target="utest.audit.js"
+			sources="utest.audit.sources"
+			externs="utest.audit.externs"
+			warning="utest.closure_warnings.txt" />
 
 		<antcall target="concat">
 			<param name="concat.sources" value="utest.compress.sources"/>
@@ -281,6 +320,42 @@
 			<param name="compress.sources" value="utest.compress.sources"/>
 			<param name="compress.outfile" value="utest.mini.js"/>
 		</antcall>
+	</target>
+
+
+	<!-- Building release package -->
+	<target name="release" description="building release package into dist directry."
+		depends="compile">
+
+		<mkdir  dir="${dist_dir}/${package.version}"/>
+		<delete dir="${dist_dir}/${package.version}/**/*"/>
+		<!-- delete task should be replaced with dependset -->
+
+		<echo output="${tmp_dir}/header.js" append="no"  message="/*"/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+
+		<echo output="${tmp_dir}/header.js" append="yes" message="${package.name}"/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+		<echo output="${tmp_dir}/header.js" append="yes" message="Version ${package.version}"/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+		<echo output="${tmp_dir}/header.js" append="yes" message="Built "/>
+		<echo output="${tmp_dir}/header.js" append="yes" message="${NOW}"/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+		<echo output="${tmp_dir}/header.js" append="yes" message="Copyright(C) ${package.author.name}"/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+
+		<concat destfile="${tmp_dir}/header.js" append="yes">
+			<path path="${basedir}/${package.licenses.file}"/>
+		</concat>
+
+		<echo output="${tmp_dir}/header.js" append="yes" message="*/"/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+
+		<concat destfile="${dist_dir}/${package.version}/${package.name}">
+			<path path="${tmp_dir}/header.js"/>
+			<path path="${out_dir}/out.js"/>
+		</concat>
 	</target>
 
 

@@ -1,15 +1,19 @@
+/**
+ * @fileoverview jasmine spec file.
+ * @suppress {missingProperties}
+ */
 
-var GLOBAL = this;
+/** @type {Object|undefined} */
+var WIL = undefined;
 
 
 describe('namespace', function() {
 
   beforeEach(function() {
-    GLOBAL.WIL = undefined;
+    WIL = undefined;
   });
 
   it('should be able to create object.', function() {
-/** @suppress {undeclared} */
     expect(WIL).toBeUndefined();
     var o = namespace('WIL.name.space.tree');
 
@@ -20,7 +24,7 @@ describe('namespace', function() {
 
 
   it('should not overwrite existing object.', function() {
-    GLOBAL.WIL = {};
+    WIL = {};
     var o = {a: 1, b: 2};
     WIL.obj = o;
 
