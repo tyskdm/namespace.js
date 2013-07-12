@@ -1,14 +1,15 @@
 
-foooo();
+var GLOBAL = this;
 
 
-describe(555, 'namespace', function() {
+describe('namespace', function() {
 
   beforeEach(function() {
-    WIL = undefined;
+    GLOBAL.WIL = undefined;
   });
 
   it('should be able to create object.', function() {
+/** @suppress {undeclared} */
     expect(WIL).toBeUndefined();
     var o = namespace('WIL.name.space.tree');
 
@@ -19,11 +20,14 @@ describe(555, 'namespace', function() {
 
 
   it('should not overwrite existing object.', function() {
-    var WIL = {};
+    GLOBAL.WIL = {};
     var o = {a: 1, b: 2};
     WIL.obj = o;
-    namespace('WIL.obj');
+
+    var n = namespace('WIL.obj');
+
     expect(WIL.obj).toEqual(o);
+    expect(n).toEqual(o);
   });
 
 });
