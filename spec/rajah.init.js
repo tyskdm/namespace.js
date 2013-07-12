@@ -21,6 +21,7 @@ function executeByScript() {
   Rajah.executeJasmine();
 }
 
+/*
 var setTimeout = function(func, t) {
   return Rajah.setTimeout(func, t);
 };
@@ -36,3 +37,4 @@ var setInterval = function(func, t) {
 var clearInterval = function(id) {
   Rajah.clearInterval(id);
 };
+*/

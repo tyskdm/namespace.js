@@ -5,17 +5,17 @@
 
 /** @expose */
 var namespace = (function(globalObject) {
-  /** @private @type {object} */
+  /** @private @type {Object} */
   var global_ = globalObject;
 
-  /** @private @type {object} */
+  /** @private @type {Object} */
   var definedNamespaces_ = {};
 
   /**
    * create namespace.
    * @param {string} nsString   name of namespace.
-   * @param {object} nsObject   object to set namespace.
-   * @return {object} new namespace.
+   * @param {Object} nsObject   object to set namespace.
+   * @return {Object} new namespace.
    */
   var namespace = function(nsString, nsObject) {
     var parent = global_,
@@ -53,7 +53,7 @@ var namespace = (function(globalObject) {
   /**
    * require namespace
    * @param {string} nsString   required namespace.
-   * @return {object}           required object.
+   * @return {Object}           required object.
    */
   var require = function(nsString) {
 
