@@ -12,7 +12,7 @@ version 0.4.0  2013.07.05
 	<property name="package.name"		value="namespace"/>
 	<property name="package.description"	value="create, define and require namespace objects."/>
 	<property name="package.website"	value="https://github.com/tyskdm/namespace.js"/>
-	<property name="package.version"	value="0.6.1"/>
+	<property name="package.version"	value="0.7.1"/>
 
 	<property name="package.author.name"	value="Tsuyoshi Kodama"/>
 	<property name="package.author.email"	value="tsuyoshi.kodama@gmail.com"/>
