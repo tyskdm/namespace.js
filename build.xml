@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!--
 build.xml template for Apache Ant to develop Google Apps Script.
+version 0.6.2  2013.07.17  add target "release".
 version 0.6.0  2013.07.13  update audit-task that can set each options off/warn/error.
 version 0.4.0  2013.07.05
 -->
@@ -8,7 +9,7 @@ version 0.4.0  2013.07.05
 	<description>ant template for GAS</description>
 
 	<!-- package information -->
-	<property name="package.name"		value="namespace.js"/>
+	<property name="package.name"		value="namespace"/>
 	<property name="package.description"	value="create, define and require namespace objects."/>
 	<property name="package.website"	value="https://github.com/tyskdm/namespace.js"/>
 	<property name="package.version"	value="0.6.1"/>
@@ -16,6 +17,7 @@ version 0.4.0  2013.07.05
 	<property name="package.author.name"	value="Tsuyoshi Kodama"/>
 	<property name="package.author.email"	value="tsuyoshi.kodama@gmail.com"/>
 
+	<property name="package.licenses.year"	value="2013"/>
 	<property name="package.licenses.type"	value="MIT"/>
 	<property name="package.licenses.file"	value="MIT.LICENSE"/>
 
@@ -56,6 +58,8 @@ version 0.4.0  2013.07.05
 	</fileset>
 
 	<fileset id="lib_ext" dir="${lib_dir}">
+		<!-- using lib file that doesn't have ext file, instead of ext file. -->
+
 	</fileset>
 
 	<fileset id="ext" dir="${ext_dir}">
@@ -115,7 +119,7 @@ version 0.4.0  2013.07.05
 		classpath="${closure-compiler.jar-path}" />
 
 
-	<!-- Macro definitions -->
+	<!-- Macro and Sub targets definitions -->
 
 	<!-- init -->
 	<macrodef name="init">
@@ -123,122 +127,133 @@ version 0.4.0  2013.07.05
 			<delete dir="${err_dir}/**/*"/>
 			<delete dir="${tmp_dir}/**/*"/>
 
-			<!-- Create the time stamp -->
 			<tstamp>
-				<format property="DATE" pattern="yyyy/MM/dd"/>
-				<format property="TIME" pattern="HH:mm:ss"/>
-				<format property="NOW"  pattern="yyyy/MM/dd HH:mm:ss"/>
+				<format property="TIMESTAMP"  pattern="yyyy/MM/dd HH:mm:ss"/>
 			</tstamp>
-			<echo output="${tmp_dir}/tstamp.js" message="// ${ant.project.name}"/>
-			<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
-			<echo output="${tmp_dir}/tstamp.js" message="// build: ${NOW}" append="yes"/>
-			<echo output="${tmp_dir}/tstamp.js" message="" append="yes"/>
+			<buildnumber/>
+
+			<!-- Create timestamp file -->
+			<echo output="${tmp_dir}/tstamp.js" append="no"  message="// ${package.name}"/>
+			<echo output="${tmp_dir}/tstamp.js" append="yes" message=""/>
+			<echo output="${tmp_dir}/tstamp.js" append="yes" message="// build ${build.number} - ${TIMESTAMP}"/>
+			<echo output="${tmp_dir}/tstamp.js" append="yes" message=""/>
+
+			<!-- Create header file -->
+			<echo output="${tmp_dir}/header.js" append="no"  message="/*"/>
+			<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+
+			<echo output="${tmp_dir}/header.js" append="yes" message="${package.name}:"/>
+			<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+			<echo output="${tmp_dir}/header.js" append="yes" message="version ${package.version}"/>
+			<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+			<echo output="${tmp_dir}/header.js" append="yes" message="build ${build.number} - ${TIMESTAMP}"/>
+			<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+			<echo output="${tmp_dir}/header.js" append="yes" message="Copyright (c) ${package.licenses.year} ${package.author.name}"/>
+			<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+
+			<concat destfile="${tmp_dir}/header.js" append="yes">
+				<path path="${basedir}/${package.licenses.file}"/>
+			</concat>
+
+			<echo output="${tmp_dir}/header.js" append="yes" message="*/"/>
+			<echo output="${tmp_dir}/header.js" append="yes" message=""/>
 		</sequential>
 	</macrodef>
 
 
 	<!-- lint
-		attribute sources // path refid of source files
-		attribute target  // filename of warning output
+		source files: path refid = lint.sources
+		warning file: filename = lint.warning
 	-->
-	<macrodef name="lint">
-		<attribute name="target"/>
-		<attribute name="sources"/>
-		<sequential>
-			<mkdir dir="${err_dir}"/>
+	<target name="lint">
+		<mkdir dir="${err_dir}"/>
 
-			<pathconvert property="lint.files" refid="@{sources}" pathsep=" "/>
+		<pathconvert property="lint.files" refid="${lint.sources}" pathsep=" "/>
 
-			<exec executable="gjslint" failonerror="true" output="${err_dir}/@{target}">
-				<arg value="--max_line_length=100"/>
+		<exec executable="gjslint" failonerror="true" output="${err_dir}/${lint.warning}">
+			<arg value="--max_line_length=100"/>
 
-				<arg line="${lint.files}"/>
-			</exec>
-		</sequential>
-	</macrodef>
+			<arg line="${lint.files}"/>
+		</exec>
+	</target>
 
 
 	<!-- audit
-		source files: path refid = sources
-		extern files: path refid = externs
-		output file:  fileneme = target
-		warning file: filename = warning
+		source files: path refid = audit.sources
+		extern files: path refid = audit.externs
+		output file:  fileneme = audit.outfile
+		warning file: filename = audit.warning
 	-->
-	<macrodef name="audit">
-		<attribute name="target"/>
-		<attribute name="sources"/>
-		<attribute name="externs"/>
-		<attribute name="warning"/>
-		<sequential>
-			<mkdir dir="${err_dir}"/>
-			<mkdir dir="${out_dir}"/>
+	<target name="audit">
+		<mkdir dir="${err_dir}"/>
+		<mkdir dir="${out_dir}"/>
 
-			<pathconvert property="audit.src.files" refid="@{sources}" pathsep=" "/>
-			<pathconvert property="audit.ext.files" refid="@{externs}" pathsep=" "/>
+		<pathconvert property="audit.src.files" refid="${audit.sources}" pathsep=" "/>
+		<pathconvert property="audit.ext.files" refid="${audit.externs}" pathsep=" "/>
 
-			<java jar="${closure-compiler.jar-path}"
-				output="${tmp_dir}/@{target}"
-				error="${err_dir}/@{warning}"
-				failonerror="true"
-				fork="true" >
+		<java jar="${closure-compiler.jar-path}"
+			output="${tmp_dir}/${audit.outfile}"
+			error="${err_dir}/${audit.warning}"
+			failonerror="true"
+			fork="true" >
 
-				<!-- compilation_level
-					[ WHITESPACE_ONLY | SIMPLE_OPTIMIZATIONS | ADVANCED_OPTIMIZATIONS ]
-				-->
-				<arg value="--compilation_level=SIMPLE_OPTIMIZATIONS"/>
+			<!-- compilation_level
+				[ WHITESPACE_ONLY | SIMPLE_OPTIMIZATIONS | ADVANCED_OPTIMIZATIONS ]
+			-->
+			<arg value="--compilation_level=SIMPLE_OPTIMIZATIONS"/>
 
-				<!-- warning_level
-					[ QUIET | DEFAULT | VERBOSE ]
-				-->
-				<arg value="--warning_level=DEFAULT"/>
+			<!-- warning_level
+				[ QUIET | DEFAULT | VERBOSE ]
+			-->
+			<arg value="--warning_level=DEFAULT"/>
 
-				<!-- options:
-					https://code.google.com/p/closure-compiler/wiki/Warnings
-					[ jscomp_off | jscomp_warning | jscomp_error ]
-				-->
-				<arg value="=accessControls"		prefix="--jscomp_warning"/>
-				<arg value="=ambiguousFunctionDecl"	prefix="--jscomp_warning"/>
-				<arg value="=checkDebuggerStatement"	prefix="--jscomp_warning"/>
-				<arg value="=checkRegExp"		prefix="--jscomp_warning"/>
-				<arg value="=checkTypes"		prefix="--jscomp_warning"/>
-				<arg value="=checkVars"			prefix="--jscomp_warning"/>
-				<arg value="=const"			prefix="--jscomp_warning"/>
-				<arg value="=constantProperty"		prefix="--jscomp_warning"/>
-				<arg value="=deprecated"		prefix="--jscomp_warning"/>
-				<arg value="=duplicate"			prefix="--jscomp_warning"/>
-				<arg value="=es5Strict"			prefix="--jscomp_warning"/>
-				<arg value="=externsValidation"		prefix="--jscomp_warning"/>
-				<arg value="=fileoverviewTags"		prefix="--jscomp_warning"/>
-				<arg value="=globalThis"		prefix="--jscomp_warning"/>
-				<arg value="=internetExplorerChecks"	prefix="--jscomp_off"/>
-				<arg value="=invalidCasts"		prefix="--jscomp_warning"/>
-				<arg value="=missingProperties"		prefix="--jscomp_warning"/>
-				<arg value="=nonStandardJsDocs"		prefix="--jscomp_warning"/>
-				<arg value="=strictModuleDepCheck"	prefix="--jscomp_off"/>
-				<arg value="=suspiciousCode"		prefix="--jscomp_warning"/>
-				<arg value="=undefinedNames"		prefix="--jscomp_warning"/>
-				<arg value="=undefinedVars"		prefix="--jscomp_warning"/>
-				<arg value="=unknownDefines"		prefix="--jscomp_warning"/>
-				<arg value="=uselessCode"		prefix="--jscomp_warning"/>
-				<arg value="=visibility"		prefix="--jscomp_warning"/>
+			<!-- options:
+				https://code.google.com/p/closure-compiler/wiki/Warnings
+				[ jscomp_off | jscomp_warning | jscomp_error ]
+			-->
+			<arg value="=accessControls"		prefix="--jscomp_warning"/>
+			<arg value="=ambiguousFunctionDecl"	prefix="--jscomp_warning"/>
+			<arg value="=checkDebuggerStatement"	prefix="--jscomp_warning"/>
+			<arg value="=checkRegExp"		prefix="--jscomp_warning"/>
+			<arg value="=checkTypes"		prefix="--jscomp_warning"/>
+			<arg value="=checkVars"			prefix="--jscomp_warning"/>
+			<arg value="=const"			prefix="--jscomp_warning"/>
+			<arg value="=constantProperty"		prefix="--jscomp_warning"/>
+			<arg value="=deprecated"		prefix="--jscomp_warning"/>
+			<arg value="=duplicate"			prefix="--jscomp_warning"/>
+			<arg value="=es5Strict"			prefix="--jscomp_warning"/>
+			<arg value="=externsValidation"		prefix="--jscomp_warning"/>
+			<arg value="=fileoverviewTags"		prefix="--jscomp_warning"/>
+			<arg value="=globalThis"		prefix="--jscomp_warning"/>
+			<arg value="=internetExplorerChecks"	prefix="--jscomp_off"/>
+			<arg value="=invalidCasts"		prefix="--jscomp_warning"/>
+			<arg value="=missingProperties"		prefix="--jscomp_warning"/>
+			<arg value="=nonStandardJsDocs"		prefix="--jscomp_warning"/>
+			<arg value="=strictModuleDepCheck"	prefix="--jscomp_off"/>
+			<arg value="=suspiciousCode"		prefix="--jscomp_warning"/>
+			<arg value="=undefinedNames"		prefix="--jscomp_warning"/>
+			<arg value="=undefinedVars"		prefix="--jscomp_warning"/>
+			<arg value="=unknownDefines"		prefix="--jscomp_warning"/>
+			<arg value="=uselessCode"		prefix="--jscomp_warning"/>
+			<arg value="=visibility"		prefix="--jscomp_warning"/>
 
 
-				<arg line="${audit.src.files}" prefix="--js="/>
-				<arg line="${audit.ext.files}" prefix="--externs="/>
-			</java>
-		</sequential>
-	</macrodef>
+			<arg line="${audit.src.files}" prefix="--js="/>
+			<arg line="${audit.ext.files}" prefix="--externs="/>
+		</java>
+	</target>
 
 
 	<!-- Concat
 		source files: path refid = concat.sources
-		output file:  file name = concat.outfile
+		header file:  filename = concat.header
+		output file:  filename = concat.outfile
 	-->
 	<target name="concat">
 		<mkdir  dir="${out_dir}"/>
 
 		<concat destfile="${out_dir}/${concat.outfile}">
-			<path path="${tmp_dir}/tstamp.js"/>
+			<path path="${tmp_dir}/${concat.header}"/>
 			<path refid="${concat.sources}"/>
 		</concat>
 	</target>
@@ -246,6 +261,7 @@ version 0.4.0  2013.07.05
 
 	<!-- Compress
 		source files: path refid = compress.sources
+		header file:  filename = compress.header
 		output file:  filename = compress.outfile
 	-->
 	<target name="compress">
@@ -258,7 +274,7 @@ version 0.4.0  2013.07.05
 		</jscomp>
 
 		<concat destfile="${out_dir}/${compress.outfile}">
-			<path path="${tmp_dir}/tstamp.js"/>
+			<path path="${tmp_dir}/${compress.header}"/>
 			<path path="${tmp_dir}/${compress.outfile}"/>
 		</concat>
 	</target>
@@ -279,21 +295,27 @@ version 0.4.0  2013.07.05
 	<target name="compile" description="Lint, Audit and then Compile.">
 		<init/>
 
-		<lint	target="out.lint_warnings.txt"
-			sources="out.audit.sources" />
+		<antcall target="lint">
+			<param name="lint.sources" value="out.audit.sources"/>
+			<param name="lint.warning" value="out.lint_warnings.txt"/>
+		</antcall>
 
-		<audit	target="out.audit.js"
-			sources="out.audit.sources"
-			externs="out.audit.externs"
-			warning="out.closure_warnings.txt" />
+		<antcall target="audit">
+			<param name="audit.sources" value="out.audit.sources"/>
+			<param name="audit.externs" value="out.audit.externs"/>
+			<param name="audit.outfile" value="out.audit.js"/>
+			<param name="audit.warning" value="out.closure_warnings.txt"/>
+		</antcall>
 
 		<antcall target="concat">
 			<param name="concat.sources" value="out.compress.sources"/>
+			<param name="concat.header"  value="header.js"/>
 			<param name="concat.outfile" value="out.js"/>
 		</antcall>
 
 		<antcall target="compress">
 			<param name="compress.sources" value="out.compress.sources"/>
+			<param name="compress.header"  value="header.js"/>
 			<param name="compress.outfile" value="out.mini.js"/>
 		</antcall>
 	</target>
@@ -303,21 +325,27 @@ version 0.4.0  2013.07.05
 	<target name="compile-utest" description="Check and Compile with specfiles for unit testing.">
 		<init/>
 
-		<lint	target="utest.lint_warnings.txt"
-			sources="utest.audit.sources" />
+		<antcall target="lint">
+			<param name="lint.sources" value="utest.audit.sources"/>
+			<param name="lint.warning" value="utest.lint_warnings.txt"/>
+		</antcall>
 
-		<audit	target="utest.audit.js"
-			sources="utest.audit.sources"
-			externs="utest.audit.externs"
-			warning="utest.closure_warnings.txt" />
+		<antcall target="audit">
+			<param name="audit.sources" value="utest.audit.sources"/>
+			<param name="audit.externs" value="utest.audit.externs"/>
+			<param name="audit.outfile" value="utest.audit.js"/>
+			<param name="audit.warning" value="utest.closure_warnings.txt"/>
+		</antcall>
 
 		<antcall target="concat">
 			<param name="concat.sources" value="utest.compress.sources"/>
+			<param name="concat.header"  value="tstamp.js"/>
 			<param name="concat.outfile" value="utest.js"/>
 		</antcall>
 
 		<antcall target="compress">
 			<param name="compress.sources" value="utest.compress.sources"/>
+			<param name="compress.header"  value="tstamp.js"/>
 			<param name="compress.outfile" value="utest.mini.js"/>
 		</antcall>
 	</target>
@@ -331,31 +359,11 @@ version 0.4.0  2013.07.05
 		<delete dir="${dist_dir}/${package.version}/**/*"/>
 		<!-- delete task should be replaced with dependset -->
 
-		<echo output="${tmp_dir}/header.js" append="no"  message="/*"/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
+		<copy file="${out_dir}/out.js"
+			tofile="${dist_dir}/${package.version}/${package.name}.js"/>
 
-		<echo output="${tmp_dir}/header.js" append="yes" message="${package.name}"/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
-		<echo output="${tmp_dir}/header.js" append="yes" message="Version ${package.version}"/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
-		<echo output="${tmp_dir}/header.js" append="yes" message="Built "/>
-		<echo output="${tmp_dir}/header.js" append="yes" message="${NOW}"/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
-		<echo output="${tmp_dir}/header.js" append="yes" message="Copyright(C) ${package.author.name}"/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
-
-		<concat destfile="${tmp_dir}/header.js" append="yes">
-			<path path="${basedir}/${package.licenses.file}"/>
-		</concat>
-
-		<echo output="${tmp_dir}/header.js" append="yes" message="*/"/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
-		<echo output="${tmp_dir}/header.js" append="yes" message=""/>
-
-		<concat destfile="${dist_dir}/${package.version}/${package.name}">
-			<path path="${tmp_dir}/header.js"/>
-			<path path="${out_dir}/out.js"/>
-		</concat>
+		<copy file="${out_dir}/out.mini.js"
+			tofile="${dist_dir}/${package.version}/${package.name}.mini.js"/>
 	</target>
 
 
